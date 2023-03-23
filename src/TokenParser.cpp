@@ -9,11 +9,17 @@
 
 namespace RC::Ini
 {
-    struct Number
+    struct Int
     {
         int64_t value;
         int base{10};
-        bool is_number{false};
+        bool is_int{false};
+    };
+
+    struct Float
+    {
+        float value;
+        bool is_float{false};
     };
 
     struct Bool
@@ -22,7 +28,7 @@ namespace RC::Ini
         bool is_bool{false};
     };
 
-    auto static is_number(File::StringViewType data) -> Number
+    auto static is_int(File::StringViewType data) -> Int
     {
         bool has_0x_prefix = [&]() {
             return (data.size() > 2 && data[0] == L'0' && (data[1] == L'x' || data[1] == L'X'));
@@ -30,12 +36,16 @@ namespace RC::Ini
 
         if (!has_0x_prefix && data[0] != L'-' && std::iswdigit(data[0]) == 0)
         {
-            return Number{0, 10, false};
+            return Int{0, 10, false};
         }
         else
         {
             File::StringViewType string = has_0x_prefix ? File::StringViewType{data.begin() + 2, data.end()} : data;
-            bool is_number = std::ranges::all_of(string.begin() + 1, string.end(), [&](const File::CharType c) {
+            if (!has_0x_prefix && data[0] == STR('-'))
+            {
+                string = File::StringViewType{string.begin() + 1, string.end()};
+            }
+            bool is_int = std::ranges::all_of(string.begin(), string.end(), [&](const File::CharType c) {
                 if constexpr (std::is_same_v<File::CharType, wchar_t>)
                 {
                     return has_0x_prefix ? std::iswxdigit(c) : std::iswdigit(c) != 0;
@@ -46,7 +56,39 @@ namespace RC::Ini
                 }
             });
 
-            return Number{.value = 0, .base = has_0x_prefix ? 16 : 10, .is_number = is_number};
+            return Int{.value = 0, .base = has_0x_prefix ? 16 : 10, .is_int = is_int};
+        }
+    }
+
+    auto static is_float(File::StringViewType data) -> Float
+    {
+        bool has_decimal_or_negative_prefix = [&]() {
+            return data.size() > 1 && data[0] == L'.' || data[0] == L'-';
+        }();
+        
+        if (!has_decimal_or_negative_prefix && std::iswdigit(data[0]) == 0)
+        {
+            return Float{0, false};
+        }
+        else
+        {
+            File::StringViewType string = data.ends_with(STR('f')) ? File::StringViewType{data.begin(), data.end() - 1} : data;
+            if (has_decimal_or_negative_prefix)
+            {
+                string = File::StringViewType{string.begin() + 1, string.end()};
+            }
+            bool is_float = std::ranges::all_of(string.begin(), string.end(), [&](const File::CharType c) {
+                if constexpr (std::is_same_v<File::CharType, wchar_t>)
+                {
+                    return has_decimal_or_negative_prefix ? std::iswxdigit(c) : std::iswdigit(c) != 0 || c == STR('.');
+                }
+                else
+                {
+                    return has_decimal_or_negative_prefix ? std::isxdigit(c) : std::isdigit(c) != 0 || c == STR('.');
+                }
+            });
+
+            return Float{.value = 0, .is_float = is_float};
         }
     }
 
@@ -278,9 +320,14 @@ namespace RC::Ini
             {
                 m_current_value->add_string_value(value);
 
-                if (auto number_data = is_number(value); number_data.is_number)
+                if (auto int_data = is_int(value); int_data.is_int)
                 {
-                    m_current_value->add_int64_value(value, number_data.base);
+                    m_current_value->add_int64_value(value, int_data.base);
+                }
+
+                if (auto float_data = is_float(value); float_data.is_float)
+                {
+                    m_current_value->add_float_value(value);
                 }
 
                 if (auto bool_data = is_bool(value); bool_data.is_bool)
