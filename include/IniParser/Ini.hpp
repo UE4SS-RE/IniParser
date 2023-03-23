@@ -45,6 +45,8 @@ namespace RC::Ini
         // Should there be more integer getters ? They'd confirm size and convert explicitly (or throw?), no implicit conversions.
         RC_INI_PARSER_API auto get_int64(const File::StringType& section, const File::StringType& key, int64_t default_value) const noexcept -> int64_t;
         RC_INI_PARSER_API auto get_int64(const File::StringType& section, const File::StringType& key) const -> int64_t;
+        RC_INI_PARSER_API auto get_float(const File::StringType& section, const File::StringType& key, float default_value) const noexcept -> float;
+        RC_INI_PARSER_API auto get_float(const File::StringType& section, const File::StringType& key) const -> float;
         RC_INI_PARSER_API auto get_bool(const File::StringType& section, const File::StringType& key, bool default_value) const noexcept -> bool;
         RC_INI_PARSER_API auto get_bool(const File::StringType& section, const File::StringType& key) const -> bool;
     };

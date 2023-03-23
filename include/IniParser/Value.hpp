@@ -17,6 +17,7 @@ namespace RC::Ini
             NoType,
             String,
             Int64,
+            Float,
             Bool,
 
             Max,
@@ -28,6 +29,7 @@ namespace RC::Ini
         // The "m_ref->value" member is set to self if it doesn't refer to another variable
         File::StringType m_string_value;
         int64_t m_int64_value{};
+        float m_float_value{};
         bool m_bool_value{};
 
         std::array<bool, static_cast<size_t>(Type::Max)> m_valid_types{false};
@@ -41,14 +43,17 @@ namespace RC::Ini
 
         RC_INI_PARSER_API auto is_valid_string() const -> bool { return is_valid_type<Type::String>(); }
         RC_INI_PARSER_API auto is_valid_int64() const -> bool { return is_valid_type<Type::Int64>(); }
+        RC_INI_PARSER_API auto is_valid_float() const -> bool { return is_valid_type<Type::Float>(); }
         RC_INI_PARSER_API auto is_valid_bool() const -> bool { return is_valid_type<Type::Bool>(); }
 
         RC_INI_PARSER_API auto get_string_value() const -> const File::StringType&;
         RC_INI_PARSER_API auto get_int64_value() const -> int64_t;
+        RC_INI_PARSER_API auto get_float_value() const -> float;
         RC_INI_PARSER_API auto get_bool_value() const -> bool;
 
         RC_INI_PARSER_API auto add_string_value(File::StringViewType data) -> void;
         RC_INI_PARSER_API auto add_int64_value(const File::StringType& data, int base = 10) -> void;
+        RC_INI_PARSER_API auto add_float_value(const File::StringType& data) -> void;
         RC_INI_PARSER_API auto add_bool_value(bool data) -> void;
 
     private:

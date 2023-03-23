@@ -30,6 +30,11 @@ namespace RC::Ini
         return m_int64_value;
     }
 
+    auto Value::get_float_value() const -> float
+    {
+        return m_float_value;
+    }
+
     auto Value::get_bool_value() const -> bool
     {
         return m_bool_value;
@@ -57,6 +62,18 @@ namespace RC::Ini
         }
 
         add_type<Type::Int64>();
+    }
+
+    auto Value::add_float_value(const StringType& data) -> void
+    {
+        m_float_value = std::stof(data, nullptr);
+
+        if (!m_ref)
+        {
+            m_ref = this;
+        }
+
+        add_type<Type::Float>();
     }
 
     auto Value::add_bool_value(bool data) -> void

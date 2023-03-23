@@ -186,6 +186,48 @@ namespace RC::Ini
         }
     }
 
+    auto Parser::get_float(const File::StringType& section, const File::StringType& key, float default_value) const noexcept -> float
+    {
+        const auto maybe_value = get_value(section, key, CanThrow::No);
+        if (!maybe_value.has_value())
+        {
+            return default_value;
+        }
+        else
+        {
+            const auto& value = maybe_value.value().get();
+            if (!value.get_ref()->is_valid_float())
+            {
+                return default_value;
+            }
+            else
+            {
+                return value.get_ref()->get_float_value();
+            }
+        }
+    }
+
+    auto Parser::get_float(const File::StringType& section, const File::StringType& key) const -> float
+    {
+        const auto maybe_value = get_value(section, key);
+        if (!maybe_value.has_value())
+        {
+            throw std::runtime_error{"[Ini::get_float] Tried getting value of type 'Float' but the value didn't exist."};
+        }
+        else
+        {
+            const auto& value = maybe_value.value().get();
+            if (!value.get_ref()->is_valid_float())
+            {
+                throw std::runtime_error{"[Ini::get_float] Tried getting value of type 'Float' but the variable cannot be interpreted as 'Float'"};
+            }
+            else
+            {
+                return value.get_ref()->get_float_value();
+            }
+        }
+    }
+
     auto Parser::get_bool(const File::StringType& section, const File::StringType& key, bool default_value) const noexcept -> bool
     {
         const auto maybe_value = get_value(section, key, CanThrow::No);
